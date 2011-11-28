@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" minWidth="955" minHeight="600">
-	
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" minWidth="955" minHeight="600" xmlns:views="org.liekkas.bradypod.views.*"
+				applicationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import org.liekkas.bradypod.models.ElementBox;
+			import org.liekkas.bradypod.models.Node;
+			import org.liekkas.bradypod.models.vos.WH;
+			import org.liekkas.bradypod.models.vos.XY;
+			protected function init():void
+			{
+				var eleBox:ElementBox = new ElementBox();
+				for(var i:int=0;i<10;i++)
+				{
+					var n:Node = new Node("1212");
+					n.x = Math.random()*1000;
+					n.y = Math.random()*800;
+					n.w = 50;
+					n.h = 50;
+					n.icon = "test";
+					n.name = "test";
+					eleBox.add(n);	
+				}
+				topo.elementBox = eleBox;
+			}
+		]]>
+	</mx:Script>
+	<views:Topo id="topo" width="100%" height="100%"/>
 </mx:Application>
