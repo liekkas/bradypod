@@ -2,7 +2,7 @@ package org.liekkas.bradypod.models
 {
 	import mx.core.UIComponent;
 	
-	import org.liekkas.bradypod.views.ui.NodeUI;
+	import org.liekkas.bradypod.models.ui.NodeUI;
 
 	/**
 	 * 节点
@@ -85,5 +85,31 @@ package org.liekkas.bradypod.models
 			var n:NodeUI = new NodeUI(this);
 			return n;
 		}
+		
+		protected var _fromEdges:Array;
+
+		public function get fromEdges():Array
+		{
+			return _fromEdges;
+		}
+
+		public function set fromEdges(value:Array):void
+		{
+			_fromEdges = value;
+		}
+
+		
+		protected var _toEdges:Array;
+
+		public function get toEdges():Array
+		{
+			return _toEdges;
+		}
+
+		public function set toEdges(value:Array):void
+		{
+			_toEdges = value;
+		}
+
 	}
 }

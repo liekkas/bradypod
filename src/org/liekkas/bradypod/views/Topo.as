@@ -1,15 +1,27 @@
 package org.liekkas.bradypod.views
 {
 	import flash.display.DisplayObject;
+	import flash.events.MouseEvent;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
+	import flash.utils.getQualifiedClassName;
 	
 	import mx.containers.Canvas;
 	import mx.core.ClassFactory;
+	import mx.core.UIComponent;
+	import mx.events.FlexEvent;
+	import mx.managers.CursorManager;
 	
+	import org.liekkas.bradypod.controllers.DragController;
+	import org.liekkas.bradypod.controllers.DrawController;
+	import org.liekkas.bradypod.controllers.IController;
+	import org.liekkas.bradypod.controllers.SelectController;
+	import org.liekkas.bradypod.events.ElementBoxEvent;
 	import org.liekkas.bradypod.models.ElementBox;
 	import org.liekkas.bradypod.models.Node;
 	import org.liekkas.bradypod.models.interfaces.IElement;
-	import org.liekkas.bradypod.views.ui.ElementUI;
-	import org.liekkas.bradypod.views.ui.NodeUI;
+	import org.liekkas.bradypod.models.ui.ElementUI;
+	import org.liekkas.bradypod.models.ui.NodeUI;
 
 	/**
 	 * 拓扑主视图
@@ -17,6 +29,25 @@ package org.liekkas.bradypod.views
 	 * */
 	public class Topo extends Canvas
 	{
+		//----控制器
+		[ArrayElementType("org.liekkas.bradypod.controllers.controllers.IController")]
+		protected var _controllers:Array = [];
+		
+		/**
+		 * 拖拽控制器
+		 * */
+		protected var dragController:IController;
+		
+		/**
+		 * 选择控制器
+		 * */
+		protected var selectController:IController;
+		
+		/**
+		 * 绘制控制器
+		 * */
+		protected var drawController:IController;
+		
 		//------------------------------------------------------
 		//                   图层区
 		//------------------------------------------------------
@@ -52,7 +83,7 @@ package org.liekkas.bradypod.views
 			return _backgroundLayer;
 		}
 		
-		protected var _elementBox:ElementBox;
+		protected var _elementBox:ElementBox = new ElementBox();
 		
 		public function get elementBox():ElementBox
 		{
@@ -61,15 +92,43 @@ package org.liekkas.bradypod.views
 		
 		public function set elementBox(value:ElementBox):void
 		{
-			_elementBox = value;
+			_elementBox.elements = value.elements;
 			invalidateProperties();
 		}
 		
 		public function Topo()
 		{
 			super();
+			
+			init();
+		}
+		
+		protected function init():void
+		{
 			this.percentHeight = 100;
 			this.percentWidth = 100;
+			
+			this.addEventListener(FlexEvent.CREATION_COMPLETE,onCreationComplete);
+			elementBox.addEventListener(ElementBoxEvent.ELEMENT_ADDED,onElementAdded);
+		}
+		
+//		/**
+//		 * 安装绘制控制器
+//		 * */
+//		public function install
+		
+		protected function onCreationComplete(evt:FlexEvent):void
+		{
+			selectController = new SelectController(this);
+			drawController = new DrawController(this);
+			dragController = new DragController(this);
+		}
+		
+		protected function onElementAdded(evt:ElementBoxEvent):void
+		{
+			var ele:IElement = evt.elementAdded;
+			if(ele)
+				_graphLayer.addChild(ele.elementUI);
 		}
 		
 		override protected function createChildren():void
@@ -77,10 +136,17 @@ package org.liekkas.bradypod.views
 			if(!_graphLayer)
 			{
 				_graphLayer = new Canvas();
-				_graphLayer.setStyle("backgroudColor",0xff00ff);
 				_graphLayer.percentWidth = 100;
 				_graphLayer.percentHeight = 100;
 				this.addChild(_graphLayer);
+			}
+			
+			if(!_topLayer)
+			{
+				_topLayer = new Canvas();
+				_topLayer.percentWidth = 100;
+				_topLayer.percentHeight = 100;
+				this.addChild(_topLayer);
 			}
 			super.createChildren();
 		}
@@ -91,11 +157,117 @@ package org.liekkas.bradypod.views
 			{
 				for each(var ele:IElement in elementBox.elements)
 				{
-					_graphLayer.addChild(ele.elementUI);
+					if(ele)
+						_graphLayer.addChild(ele.elementUI);
 				}
 				invalidateDisplayList();
 			}
 			super.commitProperties();
+		}
+		
+		/**
+		 * 添加一个控制器
+		 * */
+		public function addController(controller:IController):void
+		{
+			if(!controller)
+			{
+				trace("Topo.addController >>> controller为空");
+				return;
+			}
+			
+			if(!controller.topo)
+			{
+				controller.topo = this;
+			}
+			else if(controller.topo != this)
+			{
+				trace("Topo.addController >>> 该controller已经关联到了另外一个topo实例！");
+				return;
+			}
+			
+			//检查该controller是否已经注册或者是否被其他controller注册
+			var i:int;
+			for(i = 0;i < _controllers.length; i++)
+			{
+				if(controller == _controllers[i])
+				{
+					trace("Topo.addController >>> 该controller已经注册了(" + getQualifiedClassName(controller) + ")");
+					return;
+				}
+				
+				if(getQualifiedClassName(controller) == getQualifiedClassName(_controllers[i]))
+				{
+					trace("Topo.addController >>> 另一个controller已经注册了(" + getQualifiedClassName(controller) + ")");
+					return;
+				}
+			}
+			
+			//这个是一个新的controller
+			if(i == _controllers.length)
+			{
+				trace("Topo.addController >>> 注册成功(" + getQualifiedClassName(controller) + ")");
+				_controllers.push(controller);
+			}
+				
+		}
+		
+		/**
+		 * 移除相关的控制器
+		 * */
+		public function removeController(controller:IController):void
+		{
+			var arr:Array = [];
+			for each (var item:IController in this._controllers) 
+			{
+				if (item == controller) 
+					controller.destory();
+				else 
+					arr.push(item);
+			}
+			this._controllers = arr;
+		}
+		
+		/**
+		 * 使用拖拽模式
+		 * enableOthers -是否也启用其他模式
+		 * */
+		public function useDrag(enableOthersFlag:Boolean = false):void
+		{
+			changeMode(DragController,enableOthersFlag);
+		}
+		
+		/**
+		 * 使用绘制模式
+		 * enableOthers -是否也启用其他模式
+		 * */
+		public function useDraw(enableOthersFlag:Boolean = false):void
+		{
+			changeMode(DrawController,enableOthersFlag);
+		}
+		
+		/**
+		 * 使用选择模式
+		 * enableOthers -是否也启用其他模式
+		 * */
+		public function useSelect(enableOthersFlag:Boolean = false):void
+		{
+			changeMode(SelectController,enableOthersFlag);
+		}
+		
+		/**
+		 * 模式切换
+		 * */
+		protected function changeMode(mode:Class,enableOthersFlag:Boolean):void
+		{
+			_controllers.forEach(
+				function(item:IController,...args):void
+				{
+					if(item is mode)
+						item.active = true;
+					else
+						item.active = enableOthersFlag;
+				});
 		}
 	}
 }

@@ -5,6 +5,7 @@ package org.liekkas.bradypod.models
 	
 	import mx.collections.ArrayCollection;
 	
+	import org.liekkas.bradypod.events.ElementBoxEvent;
 	import org.liekkas.bradypod.models.interfaces.IElement;
 	
 	/**
@@ -32,9 +33,16 @@ package org.liekkas.bradypod.models
 			super(target);
 		}
 		
+		/**
+		 * 添加单个元素
+		 * */
 		public function add(element:IElement):void
 		{
 			elements.addItem(element);
+			
+			var evt:ElementBoxEvent = new ElementBoxEvent(ElementBoxEvent.ELEMENT_ADDED);
+			evt.elementAdded = element;
+			this.dispatchEvent(evt);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package org.liekkas.bradypod.views.ui
+package org.liekkas.bradypod.models.ui
 {
 	import mx.controls.Image;
 	import mx.controls.Label;

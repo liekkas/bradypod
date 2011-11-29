@@ -3,13 +3,28 @@
 				applicationComplete="init()">
 	<mx:Script>
 		<![CDATA[
+			import mx.managers.CursorManager;
+			
+			import org.liekkas.bradypod.models.Edge;
 			import org.liekkas.bradypod.models.ElementBox;
 			import org.liekkas.bradypod.models.Node;
 			import org.liekkas.bradypod.models.vos.WH;
 			import org.liekkas.bradypod.models.vos.XY;
+			import org.liekkas.bradypod.utils.ImageUtils;
+			
 			protected function init():void
 			{
 				var eleBox:ElementBox = new ElementBox();
+				
+				var e:Node = new Node("111");
+				e.x = 400;
+				e.y = 300;
+				e.w = 200;
+				e.h = 200;
+				e.icon = "test";
+				e.name = "sss";
+				eleBox.add(e);
+				
 				for(var i:int=0;i<10;i++)
 				{
 					var n:Node = new Node("1212");
@@ -19,11 +34,37 @@
 					n.h = 50;
 					n.icon = "test";
 					n.name = "test";
-					eleBox.add(n);	
+					eleBox.add(n);
+					
+					var l:Edge = new Edge();
+					l.fromNode = e;
+					l.toNode = n;
+					eleBox.add(l);
 				}
+				
 				topo.elementBox = eleBox;
+			}
+			
+			protected function select():void
+			{
+				topo.useSelect();
+			}
+			
+			protected function drag():void
+			{
+				topo.useDrag();
+			}
+			
+			protected function addNode():void
+			{
+				topo.useDraw();
 			}
 		]]>
 	</mx:Script>
+	<mx:ApplicationControlBar width="100%" height="35" dock="true">
+		<mx:Button id="btn0" label="选择模式" click="select()"/>
+		<mx:Button id="btn1" label="拖拽模式" click="drag()"/>
+		<mx:Button id="btn2" label="编辑模式" click="addNode()"/>
+	</mx:ApplicationControlBar>
 	<views:Topo id="topo" width="100%" height="100%"/>
 </mx:Application>
