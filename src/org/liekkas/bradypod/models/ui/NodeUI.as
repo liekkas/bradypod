@@ -38,5 +38,19 @@ package org.liekkas.bradypod.models.ui
 			label.y = img.y + img.height;
 			this.addChild(label);
 		}
+		
+		public function selected(value:Boolean):void
+		{
+			this.graphics.clear();
+			
+			if(value)
+			{
+				this.graphics.lineStyle(2,0xff0000);
+				this.graphics.drawRect(img.x, img.y, img.width, img.height);
+				this.graphics.endFill();
+			}
+			
+			invalidateDisplayList();
+		}
 	}
 }

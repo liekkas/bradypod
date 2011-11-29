@@ -47,24 +47,34 @@
 			
 			protected function select():void
 			{
-				topo.useSelect();
+//				topo.useSelect(true);
 			}
 			
 			protected function drag():void
 			{
-				topo.useDrag();
+//				topo.useDrag();
 			}
 			
 			protected function addNode():void
 			{
-				topo.useDraw();
+//				topo.useDraw();
 			}
 		]]>
 	</mx:Script>
 	<mx:ApplicationControlBar width="100%" height="35" dock="true">
-		<mx:Button id="btn0" label="选择模式" click="select()"/>
-		<mx:Button id="btn1" label="拖拽模式" click="drag()"/>
-		<mx:Button id="btn2" label="编辑模式" click="addNode()"/>
+		<mx:ButtonBar id="bb" dataProvider="['全景展示','编辑模式','导航模式']"/>
 	</mx:ApplicationControlBar>
-	<views:Topo id="topo" width="100%" height="100%"/>
+	<mx:HBox width="100%" height="100%">
+		<mx:VBox width="200" height="100%">
+			<mx:Panel title="鸟瞰图" width="100%" height="50%"/>
+			<mx:Panel title="局部图" width="100%" height="50%"/>
+		</mx:VBox>
+		<views:Topo id="topo" width="100%" height="100%" 
+				    top="10" bottom="10"
+					backgroundColor="green"/>
+		<mx:VBox width="200" height="100%">
+			<mx:Panel title="编辑栏" width="100%" height="50%"/>
+			<mx:Panel title="结构图" width="100%" height="50%"/>
+		</mx:VBox>
+	</mx:HBox>
 </mx:Application>

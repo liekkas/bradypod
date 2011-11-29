@@ -14,11 +14,13 @@ package org.liekkas.bradypod.views
 	
 	import org.liekkas.bradypod.controllers.DragController;
 	import org.liekkas.bradypod.controllers.DrawController;
+	import org.liekkas.bradypod.controllers.EditController;
 	import org.liekkas.bradypod.controllers.IController;
 	import org.liekkas.bradypod.controllers.SelectController;
 	import org.liekkas.bradypod.events.ElementBoxEvent;
 	import org.liekkas.bradypod.models.ElementBox;
 	import org.liekkas.bradypod.models.Node;
+	import org.liekkas.bradypod.models.SelectionModel;
 	import org.liekkas.bradypod.models.interfaces.IElement;
 	import org.liekkas.bradypod.models.ui.ElementUI;
 	import org.liekkas.bradypod.models.ui.NodeUI;
@@ -48,10 +50,28 @@ package org.liekkas.bradypod.views
 		 * */
 		protected var drawController:IController;
 		
+		/**
+		 * 编辑控制器
+		 * */
+		protected var editController:IController;
+		
 		//------------------------------------------------------
 		//                   图层区
 		//------------------------------------------------------
 		protected var _topLayer:Canvas;
+		
+		protected var _selectionModel:SelectionModel;
+
+		public function get selectionModel():SelectionModel
+		{
+			return _selectionModel;
+		}
+
+		public function set selectionModel(value:SelectionModel):void
+		{
+			_selectionModel = value;
+		}
+
 		
 		/**
 		 * 顶部图层 -- 用于框选之类的操作
@@ -108,6 +128,7 @@ package org.liekkas.bradypod.views
 			this.percentHeight = 100;
 			this.percentWidth = 100;
 			
+			_selectionModel = new SelectionModel();
 			this.addEventListener(FlexEvent.CREATION_COMPLETE,onCreationComplete);
 			elementBox.addEventListener(ElementBoxEvent.ELEMENT_ADDED,onElementAdded);
 		}
@@ -119,9 +140,10 @@ package org.liekkas.bradypod.views
 		
 		protected function onCreationComplete(evt:FlexEvent):void
 		{
-			selectController = new SelectController(this);
-			drawController = new DrawController(this);
-			dragController = new DragController(this);
+			editController = new EditController(this,true);
+//			selectController = new SelectController(this,true);
+//			drawController = new DrawController(this,true);
+//			dragController = new DragController(this);
 		}
 		
 		protected function onElementAdded(evt:ElementBoxEvent):void
@@ -133,6 +155,14 @@ package org.liekkas.bradypod.views
 		
 		override protected function createChildren():void
 		{
+			if(!_backgroundLayer)
+			{
+				_backgroundLayer = new Canvas();
+				_backgroundLayer.percentWidth = 100;
+				_backgroundLayer.percentHeight = 100;
+				this.addChild(_backgroundLayer);
+			}
+			
 			if(!_graphLayer)
 			{
 				_graphLayer = new Canvas();
@@ -163,6 +193,12 @@ package org.liekkas.bradypod.views
 				invalidateDisplayList();
 			}
 			super.commitProperties();
+		}
+		
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			trace(this.width + "," +this.height);
+			super.updateDisplayList(unscaledWidth,unscaledHeight);
 		}
 		
 		/**
@@ -269,5 +305,7 @@ package org.liekkas.bradypod.views
 						item.active = enableOthersFlag;
 				});
 		}
+		
+		
 	}
 }

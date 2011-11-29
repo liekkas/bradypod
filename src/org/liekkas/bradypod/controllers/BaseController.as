@@ -83,15 +83,15 @@ package org.liekkas.bradypod.controllers
 			{
 				if(_active)
 				{
-					if(cursor)
-						cursorId = CursorManager.setCursor(cursor);
+//					if(cursor)
+//						cursorId = CursorManager.setCursor(cursor);
 					register();
 				}
 					
 				else
 				{
-					if(cursor)
-						CursorManager.removeCursor(cursorId) ;
+//					if(cursor)
+//						CursorManager.removeCursor(cursorId) ;
 					unregister();
 				}
 					

@@ -36,20 +36,20 @@ package org.liekkas.bradypod.controllers
 		
 		protected function onClick(evt:MouseEvent):void
 		{
-			var conArr:Array = topo.graphLayer.getObjectsUnderPoint(new Point(evt.localX,evt.localY));   
-			var len:int = conArr.length;
-			if(len > 1)
-			{
-				for(var i:int = 0;i < len;i++)
-				{  
-					if(conArr[i] is Node)
-					{
-						trace(conArr[i]);  
-					}  
-				}   
-			}  
-			else
-			{
+//			var conArr:Array = topo.graphLayer.getObjectsUnderPoint(new Point(evt.localX,evt.localY));   
+//			var len:int = conArr.length;
+//			if(len > 1)
+//			{
+//				for(var i:int = 0;i < len;i++)
+//				{  
+//					if(conArr[i] is Node)
+//					{
+//						trace(conArr[i]);  
+//					}  
+//				}   
+//			}  
+//			else
+//			{
 				var e:Node = new Node("111");
 				e.w = 50;
 				e.h = 50;
@@ -58,7 +58,7 @@ package org.liekkas.bradypod.controllers
 				e.icon = "icon";
 				e.name = "sss";
 				topo.elementBox.add(e);
-			}
+//			}
 		}
 	}
 }

@@ -3,6 +3,7 @@ package org.liekkas.bradypod.models
 	import mx.core.UIComponent;
 	
 	import org.liekkas.bradypod.models.ui.NodeUI;
+	import org.liekkas.bradypod.models.vos.XY;
 
 	/**
 	 * 节点
@@ -80,10 +81,12 @@ package org.liekkas.bradypod.models
 			super(id);
 		}
 		
+		protected var nodeUI:NodeUI;
+		
 		override public function get elementUI():UIComponent
 		{
-			var n:NodeUI = new NodeUI(this);
-			return n;
+			nodeUI = new NodeUI(this);
+			return nodeUI;
 		}
 		
 		protected var _fromEdges:Array;
@@ -110,6 +113,19 @@ package org.liekkas.bradypod.models
 		{
 			_toEdges = value;
 		}
+		
+		public function containXY(x:Number,y:Number):Boolean
+		{
+			if(this.x < x && this.x + this.w > x
+				&& this.y < y && this.y + this.h > y)
+				return true;
+			else
+				return false;
+		}
 
+		public function set selected(value:Boolean):void
+		{
+			nodeUI.selected(value);
+		}
 	}
 }
