@@ -1,5 +1,7 @@
 package org.liekkas.bradypod.models
 {
+	import flash.geom.Rectangle;
+	
 	import mx.core.UIComponent;
 	
 	import org.liekkas.bradypod.models.ui.NodeUI;
@@ -114,10 +116,26 @@ package org.liekkas.bradypod.models
 			_toEdges = value;
 		}
 		
+		/**
+		 * 判断一个坐标是否在节点内
+		 * */
 		public function containXY(x:Number,y:Number):Boolean
 		{
 			if(this.x < x && this.x + this.w > x
 				&& this.y < y && this.y + this.h > y)
+				return true;
+			else
+				return false;
+		}
+		
+		/**
+		 * 判断节点是否在某个矩阵中
+		 * */
+		public function containedByRect(rect:Rectangle):Boolean
+		{
+			if(this.x > rect.x && this.y > rect.y
+				&& this.x + this.w < rect.x + rect.width
+				&& this.y + this.h < rect.y + rect.height)
 				return true;
 			else
 				return false;

@@ -24,9 +24,9 @@ package org.liekkas.bradypod.models
 		/**
 		 * 当前是否选中了元素
 		 * */
-		public function hasSelection():Boolean
+		public function size():int
 		{
-			return selectionElements.length > 0 ? true : false;
+			return selectionElements.length;
 		}
 		
 		/**
@@ -43,6 +43,22 @@ package org.liekkas.bradypod.models
 		public function add(ele:IElement):void
 		{
 			selectionElements.push(ele);
+			trace("新增一个选中元素 >>> 总长度：" + selectionElements.length);
+		}
+		
+		/**
+		 * 删除一个元素
+		 * */
+		public function remove(ele:IElement):void
+		{
+			for(var i:int = 0;i < size();i++)
+			{
+				if(selectionElements[i] == ele)
+				{
+					selectionElements.splice(i,1);
+					break;
+				}
+			}
 		}
 		
 		/**

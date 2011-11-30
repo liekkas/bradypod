@@ -21,6 +21,16 @@ package org.liekkas.bradypod.controllers
 	 * */
 	public class EditController extends BaseController
 	{
+		protected var _elements:Array;
+
+		/**
+		 * 拓扑元素
+		 * */
+		public function get elements():Array
+		{
+			return _elements ? _elements : topo.elementBox.elements.source;
+		}
+
 		/**
 		 * 鼠标按下的位置
 		 * */
@@ -41,6 +51,11 @@ package org.liekkas.bradypod.controllers
 		 * */
 		protected var allowClick:Boolean = true;
 		
+		/**
+		 * 框选矩形
+		 * */
+		protected var rect:Rectangle;
+		
 		public function EditController(topo:Topo=null, active:Boolean=false, cursor:Class=null)
 		{
 			super(topo, active, cursor);
@@ -51,8 +66,8 @@ package org.liekkas.bradypod.controllers
 			if(topo)
 			{
 				topo.addEventListener(MouseEvent.CLICK,onClick);
-				topo.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
-				topo.addEventListener(MouseEvent.MOUSE_UP,onMouseUp);
+				topo.topLayer.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
+				topo.topLayer.addEventListener(MouseEvent.MOUSE_UP,onMouseUp);
 			}
 		}
 		
@@ -61,15 +76,16 @@ package org.liekkas.bradypod.controllers
 			if(topo)
 			{
 				topo.removeEventListener(MouseEvent.CLICK,onClick);
-				topo.removeEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
-				topo.removeEventListener(MouseEvent.MOUSE_UP,onMouseUp);
+				topo.topLayer.removeEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
+				topo.topLayer.removeEventListener(MouseEvent.MOUSE_UP,onMouseUp);
 			}
 		}
 		
 		protected function onMouseDown(evt:MouseEvent):void
 		{
+			trace(">>> EditController.onMouseDown");
 			downPoint = new Point(evt.currentTarget.mouseX,evt.currentTarget.mouseY);
-			topo.addEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
+			topo.topLayer.addEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
 		}
 		
 		/**
@@ -77,14 +93,15 @@ package org.liekkas.bradypod.controllers
 		 * */
 		protected function onMouseMove(evt:MouseEvent):void
 		{
-			CursorManager.setCursor(CursorImage.CURSOR_SELECT);
+			trace(">>> EditController.onMouseMove");
+			CursorManager.setCursor(CursorImage.CURSOR_SELECT,2,-10,-10);
 			
 			var x : Number = Math.min ( downPoint.x,evt.currentTarget.mouseX )  ; 
 			var y : Number = Math.min ( downPoint.y,evt.currentTarget.mouseY )  ; 
 			var w : Number = Math.abs ( downPoint.x-evt.currentTarget.mouseX )  ; 
 			var h : Number = Math.abs ( downPoint.y-evt.currentTarget.mouseY )  ; 
 			
-			var rect:Rectangle = new Rectangle(x, y, w, h);
+			rect = new Rectangle(x, y, w, h);
 			
 			topo.topLayer.graphics.clear();
 			topo.topLayer.graphics.lineStyle(1);
@@ -97,22 +114,55 @@ package org.liekkas.bradypod.controllers
 		
 		protected function onMouseUp(evt:MouseEvent):void
 		{
+			trace(">>> EditController.onMouseUp");
+			
+			if(!allowClick)
+			{
+				for each(var ele:IElement in elements)
+				{
+					if(ele is Node)
+					{
+						if(Node(ele).containedByRect(rect))
+						{
+							Node(ele).selected = true;
+							topo.selectionModel.add(ele);
+						}
+						else
+						{
+							Node(ele).selected = false;
+							topo.selectionModel.remove(ele);
+						}
+					}
+				}
+			}
+			
+			
 			CursorManager.removeAllCursors();
 			topo.topLayer.graphics.clear();
-			topo.removeEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
+			topo.topLayer.removeEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
 		}
 		
+		/**
+		 * 鼠标点击会出现两种情况：
+		 * 	1、所点击的地方是空的，这时把拓扑选中模型清空，然后new一个节点
+		 *  2、所点击的地方已经有了一个节点，把这个节点加入到选中模型中，然后高亮这个节点，同时把以前高亮过的节点都恢复到正常状态
+		 * */
 		protected function onClick(evt:MouseEvent):void
 		{
+			trace(">>> EditController.onClick");
 			if(allowClick)
 			{
-				var eles:Array = topo.elementBox.elements.source;
+				trace(">>> EditController.onClick >>> allowClick");
 				var x:Number = evt.currentTarget.mouseX;
 				var y:Number = evt.currentTarget.mouseY;
 				
 				topo.selectionModel.clear();
 				
-				for each(var ele:IElement in eles)
+				/**
+				 * 有种情况是多个元素叠在一起，这时以最上面的为准，在数组里就是后面的为准，
+				 * 因此倒转数组，只要找到第一个就break
+				 * */
+				for each(var ele:IElement in elements.reverse())
 				{
 					if(ele is Node && Node(ele).containXY(x,y))
 					{
@@ -122,7 +172,7 @@ package org.liekkas.bradypod.controllers
 					}
 				}
 				
-				if(!topo.selectionModel.hasSelection())
+				if(topo.selectionModel.size() == 0)
 				{
 					var e:Node = new Node("111");
 					e.w = 50;
