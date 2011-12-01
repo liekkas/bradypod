@@ -6,9 +6,18 @@ package org.liekkas.bradypod.controllers
 	
 	import mx.managers.CursorManager;
 	
+	import org.liekkas.bradypod.controllers.plugins.AddNodePlugin;
+	import org.liekkas.bradypod.controllers.plugins.DrawEdgePlugin;
+	import org.liekkas.bradypod.controllers.plugins.SelectNodePlugin;
+	import org.liekkas.bradypod.controllers.plugins.SelectRectPlugin;
+	import org.liekkas.bradypod.events.InteractionEvent;
+	import org.liekkas.bradypod.models.Edge;
 	import org.liekkas.bradypod.models.Node;
 	import org.liekkas.bradypod.models.interfaces.IElement;
+	import org.liekkas.bradypod.models.ui.EdgeUI;
+	import org.liekkas.bradypod.models.vos.XY;
 	import org.liekkas.bradypod.utils.CursorImage;
+	import org.liekkas.bradypod.utils.DrawUtils;
 	import org.liekkas.bradypod.views.Topo;
 	
 	/**
@@ -56,6 +65,21 @@ package org.liekkas.bradypod.controllers
 		 * */
 		protected var rect:Rectangle;
 		
+		/**
+		 * 绘制边时的起始node
+		 * */
+		protected var fromNode:Node;
+		
+		/**
+		 * 绘制边时的终止node
+		 * */
+		protected var toNode:Node;
+		
+		/**
+		 * 绘制边时沿途碰撞过的node数组
+		 * */
+		protected var collides:Array = [];
+		
 		public function EditController(topo:Topo=null, active:Boolean=false, cursor:Class=null)
 		{
 			super(topo, active, cursor);
@@ -65,6 +89,11 @@ package org.liekkas.bradypod.controllers
 		{
 			if(topo)
 			{
+				new SelectNodePlugin(topo).install();
+				new SelectRectPlugin(topo).install();
+				new DrawEdgePlugin(topo).install();
+				new AddNodePlugin(topo).install();
+				
 				topo.addEventListener(MouseEvent.CLICK,onClick);
 				topo.topLayer.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
 				topo.topLayer.addEventListener(MouseEvent.MOUSE_UP,onMouseUp);
@@ -85,6 +114,9 @@ package org.liekkas.bradypod.controllers
 		{
 			trace(">>> EditController.onMouseDown");
 			downPoint = new Point(evt.currentTarget.mouseX,evt.currentTarget.mouseY);
+			
+			fromNode = topo.getElementUnderPoint(downPoint.x,downPoint.y);
+			
 			topo.topLayer.addEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
 		}
 		
@@ -93,52 +125,35 @@ package org.liekkas.bradypod.controllers
 		 * */
 		protected function onMouseMove(evt:MouseEvent):void
 		{
-			trace(">>> EditController.onMouseMove");
-			CursorManager.setCursor(CursorImage.CURSOR_SELECT,2,-10,-10);
-			
-			var x : Number = Math.min ( downPoint.x,evt.currentTarget.mouseX )  ; 
-			var y : Number = Math.min ( downPoint.y,evt.currentTarget.mouseY )  ; 
-			var w : Number = Math.abs ( downPoint.x-evt.currentTarget.mouseX )  ; 
-			var h : Number = Math.abs ( downPoint.y-evt.currentTarget.mouseY )  ; 
-			
-			rect = new Rectangle(x, y, w, h);
-			
-			topo.topLayer.graphics.clear();
-			topo.topLayer.graphics.lineStyle(1);
-			topo.topLayer.graphics.beginFill(color,alpha);
-			topo.topLayer.graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
-			topo.topLayer.graphics.endFill();
-			
+			if(fromNode)
+			{
+				topo.dispatchEvent(new InteractionEvent(
+					InteractionEvent.DRAW_EDGE_START,fromNode,topo,evt,fromNode));
+			}
+			else
+			{
+				topo.dispatchEvent(new InteractionEvent(
+					InteractionEvent.SELECT_START,downPoint,topo,evt));
+			}
 			allowClick = false;
 		}
 		
+		/**
+		 * 鼠标释放事件
+		 * */
 		protected function onMouseUp(evt:MouseEvent):void
 		{
-			trace(">>> EditController.onMouseUp");
-			
 			if(!allowClick)
 			{
-				for each(var ele:IElement in elements)
+				if(fromNode)
 				{
-					if(ele is Node)
-					{
-						if(Node(ele).containedByRect(rect))
-						{
-							Node(ele).selected = true;
-							topo.selectionModel.add(ele);
-						}
-						else
-						{
-							Node(ele).selected = false;
-							topo.selectionModel.remove(ele);
-						}
-					}
+					topo.dispatchEvent(new InteractionEvent(InteractionEvent.DRAW_EDGE_END));
+				}
+				else
+				{
+					topo.dispatchEvent(new InteractionEvent(InteractionEvent.SELECT_END));
 				}
 			}
-			
-			
-			CursorManager.removeAllCursors();
-			topo.topLayer.graphics.clear();
 			topo.topLayer.removeEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
 		}
 		
@@ -149,39 +164,24 @@ package org.liekkas.bradypod.controllers
 		 * */
 		protected function onClick(evt:MouseEvent):void
 		{
-			trace(">>> EditController.onClick");
 			if(allowClick)
 			{
-				trace(">>> EditController.onClick >>> allowClick");
 				var x:Number = evt.currentTarget.mouseX;
 				var y:Number = evt.currentTarget.mouseY;
 				
 				topo.selectionModel.clear();
 				
-				/**
-				 * 有种情况是多个元素叠在一起，这时以最上面的为准，在数组里就是后面的为准，
-				 * 因此倒转数组，只要找到第一个就break
-				 * */
-				for each(var ele:IElement in elements.reverse())
-				{
-					if(ele is Node && Node(ele).containXY(x,y))
-					{
-						Node(ele).selected = true;
-						topo.selectionModel.add(ele);
-						break;
-					}
-				}
+				var selectedEle:Node = topo.getElementUnderPoint(x,y);
 				
-				if(topo.selectionModel.size() == 0)
+				if(selectedEle)
 				{
-					var e:Node = new Node("111");
-					e.w = 50;
-					e.h = 50;
-					e.x = evt.currentTarget.mouseX - e.w * .5;
-					e.y = evt.currentTarget.mouseY - e.h * .5;
-					e.icon = "icon";
-					e.name = "sss";
-					topo.elementBox.add(e);
+					topo.dispatchEvent(new InteractionEvent(
+						InteractionEvent.CLICK_ELEMENT,selectedEle));
+				}
+				else
+				{
+					topo.dispatchEvent(new InteractionEvent(
+						InteractionEvent.CLICK_ADD_NODE));
 				}
 			}
 			else

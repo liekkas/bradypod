@@ -16,6 +16,7 @@ package org.liekkas.bradypod.models
 		public function set fromNode(value:Node):void
 		{
 			_fromNode = value;
+			_fromNode.fromEdges.push(this);
 		}
 
 		
@@ -29,6 +30,7 @@ package org.liekkas.bradypod.models
 		public function set toNode(value:Node):void
 		{
 			_toNode = value;
+			_toNode.toEdges.push(this);
 		}
 		
 		

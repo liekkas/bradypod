@@ -55,14 +55,15 @@
 //				topo.useDrag();
 			}
 			
-			protected function addNode():void
+			protected function regionLayout():void
 			{
-//				topo.useDraw();
+				topo.layout();
 			}
 		]]>
 	</mx:Script>
 	<mx:ApplicationControlBar width="100%" height="35" dock="true">
 		<mx:ButtonBar id="bb" dataProvider="['全景展示','编辑模式','导航模式']"/>
+		<mx:Button label="地区布局" click="regionLayout()"/>
 	</mx:ApplicationControlBar>
 	<mx:HBox width="100%" height="100%">
 		<mx:VBox width="200" height="100%">

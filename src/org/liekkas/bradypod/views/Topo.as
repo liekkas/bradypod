@@ -16,6 +16,7 @@ package org.liekkas.bradypod.views
 	import org.liekkas.bradypod.controllers.DrawController;
 	import org.liekkas.bradypod.controllers.EditController;
 	import org.liekkas.bradypod.controllers.IController;
+	import org.liekkas.bradypod.controllers.LayoutController;
 	import org.liekkas.bradypod.controllers.SelectController;
 	import org.liekkas.bradypod.events.ElementBoxEvent;
 	import org.liekkas.bradypod.models.ElementBox;
@@ -54,6 +55,11 @@ package org.liekkas.bradypod.views
 		 * 编辑控制器
 		 * */
 		protected var editController:IController;
+		
+		/**
+		 * 布局控制器
+		 * */
+		protected var layoutController:IController;
 		
 		//------------------------------------------------------
 		//                   图层区
@@ -141,6 +147,7 @@ package org.liekkas.bradypod.views
 		protected function onCreationComplete(evt:FlexEvent):void
 		{
 			editController = new EditController(this,true);
+			layoutController = new LayoutController(this);
 //			selectController = new SelectController(this,true);
 //			drawController = new DrawController(this,true);
 //			dragController = new DragController(this);
@@ -306,6 +313,29 @@ package org.liekkas.bradypod.views
 				});
 		}
 		
+		public function layout():void
+		{
+			LayoutController(layoutController).regionLayout();
+		}
 		
+		/**
+		 * 获得某点下的元素节点
+		 * */
+		public function getElementUnderPoint(x:Number,y:Number):Node
+		{
+			/**
+			 * 有种情况是多个元素叠在一起，这时以最上面的为准，在数组里就是后面的为准，
+			 * 因此倒转数组，只要找到第一个就break
+			 * */
+			for each(var ele:IElement in elementBox.elements.source.reverse())
+			{
+				if(ele is Node && Node(ele).containXY(x,y))
+				{
+					return Node(ele);
+				}
+			}
+			
+			return null;
+		}
 	}
 }

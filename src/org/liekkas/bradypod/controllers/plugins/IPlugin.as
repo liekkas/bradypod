@@ -1,5 +1,7 @@
 package org.liekkas.bradypod.controllers.plugins
 {
+	import org.liekkas.bradypod.views.Topo;
+
 	/**
 	 * 插件机制接口
 	 * @author liekkas.zeng
@@ -7,7 +9,10 @@ package org.liekkas.bradypod.controllers.plugins
 	 * */
 	public interface IPlugin
 	{
-		function install();
-		function uninstall();
+		function get topo():Topo;
+		function set topo(value:Topo):void;
+		
+		function install():void;
+		function uninstall():void;
 	}
 }

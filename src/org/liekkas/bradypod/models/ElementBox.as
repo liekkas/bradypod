@@ -17,6 +17,11 @@ package org.liekkas.bradypod.models
 	{
 		protected var _elements:ArrayCollection = new ArrayCollection();
 
+		public var nodes:Array = [];
+		public var nodesNum:int;
+		public var nodesLen:Number = 0;		
+		public var edges:int;
+		
 		public function get elements():ArrayCollection
 		{
 			return _elements;
@@ -25,6 +30,11 @@ package org.liekkas.bradypod.models
 		public function set elements(value:ArrayCollection):void
 		{
 			_elements = value;
+			
+			for each(var ele:IElement in _elements)
+			{
+				counts(ele);
+			}
 		}
 
 		
@@ -38,11 +48,35 @@ package org.liekkas.bradypod.models
 		 * */
 		public function add(element:IElement):void
 		{
+			counts(element);	
 			elements.addItem(element);
 			
 			var evt:ElementBoxEvent = new ElementBoxEvent(ElementBoxEvent.ELEMENT_ADDED);
 			evt.elementAdded = element;
 			this.dispatchEvent(evt);
+		}
+		
+		/**
+		 * 统计数量
+		 * */
+		private function counts(element:IElement):void
+		{
+			if(element is Node)
+			{
+				nodes.push(Node(element));
+				nodesNum ++;
+				nodesLen += Node(element).w;
+			}
+			else if(element is Edge)
+				edges ++;
+		}
+		
+		/**
+		 * 清空
+		 * */
+		public function clear():void
+		{
+			elements.removeAll();
 		}
 	}
 }

@@ -4,6 +4,7 @@ package org.liekkas.bradypod.models
 	
 	import mx.core.UIComponent;
 	
+	import org.liekkas.bradypod.models.ui.EdgeUI;
 	import org.liekkas.bradypod.models.ui.NodeUI;
 	import org.liekkas.bradypod.models.vos.XY;
 
@@ -16,6 +17,7 @@ package org.liekkas.bradypod.models
 	{
 		protected var _x:Number;
 
+		[Bindable]
 		public function get x():Number
 		{
 			return _x;
@@ -29,6 +31,7 @@ package org.liekkas.bradypod.models
 		
 		protected var _y:Number;
 
+		[Bindable]
 		public function get y():Number
 		{
 			return _y;
@@ -91,7 +94,7 @@ package org.liekkas.bradypod.models
 			return nodeUI;
 		}
 		
-		protected var _fromEdges:Array;
+		protected var _fromEdges:Array = [];
 
 		public function get fromEdges():Array
 		{
@@ -104,7 +107,7 @@ package org.liekkas.bradypod.models
 		}
 
 		
-		protected var _toEdges:Array;
+		protected var _toEdges:Array = [];
 
 		public function get toEdges():Array
 		{
@@ -141,9 +144,33 @@ package org.liekkas.bradypod.models
 				return false;
 		}
 
+		/**
+		 * 是否选中
+		 * */
+		protected var _selected:Boolean;
+
+		public function get selected():Boolean
+		{
+			return _selected;
+		}
+
+		
 		public function set selected(value:Boolean):void
 		{
-			nodeUI.selected(value);
+			_selected = value;
+			nodeUI.selected = _selected;
+		}
+		
+		public function setXY(x:Number,y:Number):void
+		{
+			this.x = x;
+			this.y = y;
+			nodeUI.moved = true;
+			
+			for each(var edge:Edge in fromEdges.concat(toEdges))
+			{
+				EdgeUI(edge.elementUI).moved = true;
+			}
 		}
 	}
 }
