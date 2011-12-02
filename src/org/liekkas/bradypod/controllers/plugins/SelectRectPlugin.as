@@ -68,6 +68,11 @@ package org.liekkas.bradypod.controllers.plugins
 			{
 				topo.removeEventListener(InteractionEvent.SELECT_START,onSelectStart);
 				topo.removeEventListener(InteractionEvent.SELECT_END,onSelectEnd);
+				trace("卸载插件成功  >>> SelectRectPlugin");
+			}
+			else
+			{
+				trace("卸载插件失败  >>> topo为空!!!");
 			}
 		}
 		
@@ -86,7 +91,7 @@ package org.liekkas.bradypod.controllers.plugins
 			//计算矩形
 			var curX:Number = evt.mouseEvent.currentTarget.mouseX;
 			var curY:Number = evt.mouseEvent.currentTarget.mouseY;
-			var x : Number = Math.min ( downPoint.x, curX)  ; 
+			var x : Number = Math.min ( downPoint.x, curX )  ; 
 			var y : Number = Math.min ( downPoint.y, curY )  ; 
 			var w : Number = Math.abs ( downPoint.x- curX )  ; 
 			var h : Number = Math.abs ( downPoint.y- curY )  ; 
@@ -105,22 +110,10 @@ package org.liekkas.bradypod.controllers.plugins
 		 * */
 		protected function onSelectEnd(evt:InteractionEvent):void
 		{
-			for each(var ele:IElement in topo.elementBox.elements)
-			{
-				if(ele is Node)
-				{
-					if(Node(ele).containedByRect(rect))
-					{
-						Node(ele).selected = true;
-						topo.selectionModel.add(ele);
-					}
-					else
-					{
-						Node(ele).selected = false;
-						topo.selectionModel.remove(ele);
-					}
-				}
-			}
+			topo.selectionModel.clear();
+			
+			topo.selectionModel.selectionElements = topo.getElementsUnderRect(rect);
+
 			cursorFlag = true;
 			CursorManager.removeCursor(CursorManager.currentCursorID);
 			topo.topLayer.graphics.clear();

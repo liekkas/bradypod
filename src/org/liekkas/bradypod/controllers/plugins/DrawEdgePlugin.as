@@ -64,6 +64,11 @@ package org.liekkas.bradypod.controllers.plugins
 			{
 				topo.removeEventListener(InteractionEvent.DRAW_EDGE_START,onDrawEdgeStart);
 				topo.removeEventListener(InteractionEvent.DRAW_EDGE_END,onDrawEdgeEnd);
+				trace("卸载插件成功  >>> DrawEdgePlugin");
+			}
+			else
+			{
+				trace("卸载插件失败  >>> topo为空!!!");
 			}
 		}
 		

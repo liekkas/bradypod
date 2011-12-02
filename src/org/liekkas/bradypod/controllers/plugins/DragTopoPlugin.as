@@ -1,7 +1,9 @@
 package org.liekkas.bradypod.controllers.plugins
 {
-	import org.liekkas.bradypod.views.Topo;
 	import flash.events.MouseEvent;
+	
+	import org.liekkas.bradypod.events.InteractionEvent;
+	import org.liekkas.bradypod.views.Topo;
 	
 	/**
 	 * 拖拽整个拓扑插件
@@ -18,8 +20,8 @@ package org.liekkas.bradypod.controllers.plugins
 		{
 			if(topo)
 			{
-				topo.graphLayer.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
-				topo.graphLayer.addEventListener(MouseEvent.MOUSE_UP,onMouseUp);
+				topo.addEventListener(InteractionEvent.DRAG_TOPO_START,onStart);
+				topo.addEventListener(InteractionEvent.DRAG_TOPO_END,onEnd);
 			}
 		}
 		
@@ -27,17 +29,17 @@ package org.liekkas.bradypod.controllers.plugins
 		{
 			if(topo)
 			{
-				topo.graphLayer.removeEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
-				topo.graphLayer.removeEventListener(MouseEvent.MOUSE_UP,onMouseUp);
+				topo.removeEventListener(InteractionEvent.DRAG_TOPO_START,onStart);
+				topo.removeEventListener(InteractionEvent.DRAG_TOPO_END,onEnd);
 			}
 		}
 		
-		protected function onMouseDown(evt:MouseEvent):void
+		protected function onStart(evt:InteractionEvent):void
 		{
 			topo.graphLayer.startDrag();
 		}
 		
-		protected function onMouseUp(evt:MouseEvent):void
+		protected function onEnd(evt:InteractionEvent):void
 		{
 			topo.graphLayer.stopDrag();
 		}

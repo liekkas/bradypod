@@ -35,13 +35,17 @@ package org.liekkas.bradypod.controllers.plugins
 			if(topo)
 			{
 				topo.removeEventListener(InteractionEvent.CLICK_ELEMENT,onClickElement);
+				trace("卸载插件成功  >>> SelectNodePlugin");
+			}
+			else
+			{
+				trace("卸载插件失败  >>> topo为空!!!");
 			}
 		}
 		
 		protected function onClickElement(evt:InteractionEvent):void
 		{
 			var selectedEle:Node = evt.payload;
-			selectedEle.selected = true;
 			topo.selectionModel.add(selectedEle);
 		}
 	}

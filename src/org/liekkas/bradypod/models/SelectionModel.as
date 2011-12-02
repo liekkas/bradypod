@@ -19,6 +19,10 @@ package org.liekkas.bradypod.models
 		public function set selectionElements(value:Array):void
 		{
 			_selectionElements = value;
+			for each(var ele:IElement in selectionElements)
+			{
+				Node(ele).selected = true;
+			}
 		}
 		
 		/**
@@ -42,6 +46,7 @@ package org.liekkas.bradypod.models
 		 * */
 		public function add(ele:IElement):void
 		{
+			Node(ele).selected = true;
 			selectionElements.push(ele);
 			trace("新增一个选中元素 >>> 总长度：" + selectionElements.length);
 		}

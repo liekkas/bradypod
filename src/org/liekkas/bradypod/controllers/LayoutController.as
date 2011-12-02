@@ -7,9 +7,8 @@ package org.liekkas.bradypod.controllers
 	/**
 	 * 布局控制器 -- 通过安装具体插件实现各种布局
 	 * @author liekkas.zeng
-	 * @date 2011-11-30 16:16:53
 	 * */
-	public class LayoutController extends BaseController
+	public class LayoutController extends AbstractController
 	{
 		protected static const GAP:int = 10; 
 		

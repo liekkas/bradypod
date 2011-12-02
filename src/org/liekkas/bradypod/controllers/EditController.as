@@ -26,34 +26,13 @@ package org.liekkas.bradypod.controllers
 	 * 	   2、从一个node做鼠标move操作视为连线
 	 *     3、在空白处框做鼠标Move视为框选
 	 * @authro liekkas.zeng
-	 * @date 2011-11-29 15:13:07
 	 * */
-	public class EditController extends BaseController
+	public class EditController extends AbstractController
 	{
-		protected var _elements:Array;
-
-		/**
-		 * 拓扑元素
-		 * */
-		public function get elements():Array
-		{
-			return _elements ? _elements : topo.elementBox.elements.source;
-		}
-
 		/**
 		 * 鼠标按下的位置
 		 * */
 		protected var downPoint:Point;
-		
-		/**
-		 * 框选颜色
-		 * */
-		protected var color:uint = 0x00ffff;
-		
-		/**
-		 * 框选透明度
-		 * */
-		protected var alpha:Number = .1;
 		
 		/**
 		 * 鼠标click标志 --有时在mouse_down和mouse_up后不希望还有click事件，可以在mouse_move里设为false不让click
@@ -61,24 +40,9 @@ package org.liekkas.bradypod.controllers
 		protected var allowClick:Boolean = true;
 		
 		/**
-		 * 框选矩形
+		 * 鼠标按下时的节点
 		 * */
-		protected var rect:Rectangle;
-		
-		/**
-		 * 绘制边时的起始node
-		 * */
-		protected var fromNode:Node;
-		
-		/**
-		 * 绘制边时的终止node
-		 * */
-		protected var toNode:Node;
-		
-		/**
-		 * 绘制边时沿途碰撞过的node数组
-		 * */
-		protected var collides:Array = [];
+		protected var downNode:Node;
 		
 		public function EditController(topo:Topo=null, active:Boolean=false, cursor:Class=null)
 		{
@@ -89,11 +53,13 @@ package org.liekkas.bradypod.controllers
 		{
 			if(topo)
 			{
-				new SelectNodePlugin(topo).install();
-				new SelectRectPlugin(topo).install();
-				new DrawEdgePlugin(topo).install();
-				new AddNodePlugin(topo).install();
-				
+				installPlugins([
+					 new SelectNodePlugin(topo)
+					,new SelectRectPlugin(topo)
+					,new DrawEdgePlugin(topo)
+					,new AddNodePlugin(topo)
+				]);
+
 				topo.addEventListener(MouseEvent.CLICK,onClick);
 				topo.topLayer.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
 				topo.topLayer.addEventListener(MouseEvent.MOUSE_UP,onMouseUp);
@@ -108,44 +74,52 @@ package org.liekkas.bradypod.controllers
 				topo.topLayer.removeEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
 				topo.topLayer.removeEventListener(MouseEvent.MOUSE_UP,onMouseUp);
 			}
+			
+			super.unregister();
 		}
 		
+		/**
+		 * 鼠标按下事件
+		 * 并记住落下的位置以及去获取这个位置上的拓扑元素
+		 * */
 		protected function onMouseDown(evt:MouseEvent):void
 		{
-			trace(">>> EditController.onMouseDown");
 			downPoint = new Point(evt.currentTarget.mouseX,evt.currentTarget.mouseY);
 			
-			fromNode = topo.getElementUnderPoint(downPoint.x,downPoint.y);
+			downNode = topo.getElementUnderPoint(downPoint.x,downPoint.y);
 			
 			topo.topLayer.addEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
 		}
 		
 		/**
-		 * 绘制框选区域
+		 * 鼠标移动事件
+		 * 如果落点处有元素则以该点为起点开始绘制边，反之则进行框选操作
 		 * */
 		protected function onMouseMove(evt:MouseEvent):void
 		{
-			if(fromNode)
+			if(downNode)
 			{
 				topo.dispatchEvent(new InteractionEvent(
-					InteractionEvent.DRAW_EDGE_START,fromNode,topo,evt,fromNode));
+					InteractionEvent.DRAW_EDGE_START,downNode,topo,evt));
 			}
 			else
 			{
 				topo.dispatchEvent(new InteractionEvent(
 					InteractionEvent.SELECT_START,downPoint,topo,evt));
 			}
+			
 			allowClick = false;
 		}
 		
 		/**
 		 * 鼠标释放事件
+		 * 同上，根据起始点是否有拓扑元素派发不同的额事件
 		 * */
 		protected function onMouseUp(evt:MouseEvent):void
 		{
 			if(!allowClick)
 			{
-				if(fromNode)
+				if(downNode)
 				{
 					topo.dispatchEvent(new InteractionEvent(InteractionEvent.DRAW_EDGE_END));
 				}
@@ -166,17 +140,17 @@ package org.liekkas.bradypod.controllers
 		{
 			if(allowClick)
 			{
+				trace("EditController >>> onClick");
+				
 				var x:Number = evt.currentTarget.mouseX;
 				var y:Number = evt.currentTarget.mouseY;
 				
 				topo.selectionModel.clear();
 				
-				var selectedEle:Node = topo.getElementUnderPoint(x,y);
-				
-				if(selectedEle)
+				if(downNode)
 				{
 					topo.dispatchEvent(new InteractionEvent(
-						InteractionEvent.CLICK_ELEMENT,selectedEle));
+						InteractionEvent.CLICK_ELEMENT,downNode));
 				}
 				else
 				{

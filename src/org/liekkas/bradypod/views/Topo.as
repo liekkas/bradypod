@@ -12,12 +12,10 @@ package org.liekkas.bradypod.views
 	import mx.events.FlexEvent;
 	import mx.managers.CursorManager;
 	
+	import org.liekkas.bradypod.controllers.DefaultController;
 	import org.liekkas.bradypod.controllers.DragController;
-	import org.liekkas.bradypod.controllers.DrawController;
 	import org.liekkas.bradypod.controllers.EditController;
 	import org.liekkas.bradypod.controllers.IController;
-	import org.liekkas.bradypod.controllers.LayoutController;
-	import org.liekkas.bradypod.controllers.SelectController;
 	import org.liekkas.bradypod.events.ElementBoxEvent;
 	import org.liekkas.bradypod.models.ElementBox;
 	import org.liekkas.bradypod.models.Node;
@@ -25,6 +23,7 @@ package org.liekkas.bradypod.views
 	import org.liekkas.bradypod.models.interfaces.IElement;
 	import org.liekkas.bradypod.models.ui.ElementUI;
 	import org.liekkas.bradypod.models.ui.NodeUI;
+	import org.liekkas.bradypod.utils.CursorImage;
 
 	/**
 	 * 拓扑主视图
@@ -35,31 +34,6 @@ package org.liekkas.bradypod.views
 		//----控制器
 		[ArrayElementType("org.liekkas.bradypod.controllers.controllers.IController")]
 		protected var _controllers:Array = [];
-		
-		/**
-		 * 拖拽控制器
-		 * */
-		protected var dragController:IController;
-		
-		/**
-		 * 选择控制器
-		 * */
-		protected var selectController:IController;
-		
-		/**
-		 * 绘制控制器
-		 * */
-		protected var drawController:IController;
-		
-		/**
-		 * 编辑控制器
-		 * */
-		protected var editController:IController;
-		
-		/**
-		 * 布局控制器
-		 * */
-		protected var layoutController:IController;
 		
 		//------------------------------------------------------
 		//                   图层区
@@ -146,11 +120,7 @@ package org.liekkas.bradypod.views
 		
 		protected function onCreationComplete(evt:FlexEvent):void
 		{
-			editController = new EditController(this,true);
-			layoutController = new LayoutController(this);
-//			selectController = new SelectController(this,true);
-//			drawController = new DrawController(this,true);
-//			dragController = new DragController(this);
+			new DefaultController(this,true);
 		}
 		
 		protected function onElementAdded(evt:ElementBoxEvent):void
@@ -211,19 +181,19 @@ package org.liekkas.bradypod.views
 		/**
 		 * 添加一个控制器
 		 * */
-		public function addController(controller:IController):void
+		public function addController(c:IController):void
 		{
-			if(!controller)
+			if(!c)
 			{
 				trace("Topo.addController >>> controller为空");
 				return;
 			}
 			
-			if(!controller.topo)
+			if(!c.topo)
 			{
-				controller.topo = this;
+				c.topo = this;
 			}
-			else if(controller.topo != this)
+			else if(c.topo != this)
 			{
 				trace("Topo.addController >>> 该controller已经关联到了另外一个topo实例！");
 				return;
@@ -233,24 +203,24 @@ package org.liekkas.bradypod.views
 			var i:int;
 			for(i = 0;i < _controllers.length; i++)
 			{
-				if(controller == _controllers[i])
+				if(c == _controllers[i])
 				{
-					trace("Topo.addController >>> 该controller已经注册了(" + getQualifiedClassName(controller) + ")");
+					trace("Topo.addController >>> 该controller已经注册了(" + getQualifiedClassName(c) + ")");
 					return;
 				}
 				
-				if(getQualifiedClassName(controller) == getQualifiedClassName(_controllers[i]))
+				if(getQualifiedClassName(c) == getQualifiedClassName(_controllers[i]))
 				{
-					trace("Topo.addController >>> 另一个controller已经注册了(" + getQualifiedClassName(controller) + ")");
+					trace("Topo.addController >>> 另一个controller已经注册了(" + getQualifiedClassName(c) + ")");
 					return;
 				}
 			}
 			
-			//这个是一个新的controller
+			//这个是一个新的c
 			if(i == _controllers.length)
 			{
-				trace("Topo.addController >>> 注册成功(" + getQualifiedClassName(controller) + ")");
-				_controllers.push(controller);
+				trace("Topo.addController >>> 注册成功(" + getQualifiedClassName(c) + ")");
+				_controllers.push(c);
 			}
 				
 		}
@@ -258,13 +228,13 @@ package org.liekkas.bradypod.views
 		/**
 		 * 移除相关的控制器
 		 * */
-		public function removeController(controller:IController):void
+		public function removeController(c:IController):void
 		{
 			var arr:Array = [];
 			for each (var item:IController in this._controllers) 
 			{
-				if (item == controller) 
-					controller.destory();
+				if (item == c) 
+					c.destory();
 				else 
 					arr.push(item);
 			}
@@ -273,49 +243,57 @@ package org.liekkas.bradypod.views
 		
 		/**
 		 * 使用拖拽模式
-		 * enableOthers -是否也启用其他模式
 		 * */
-		public function useDrag(enableOthersFlag:Boolean = false):void
+		public function useDrag():void
 		{
-			changeMode(DragController,enableOthersFlag);
+			if(!changeMode(DragController))
+				new DragController(this,true,CursorImage.CURSOR_DRAG);
 		}
 		
 		/**
-		 * 使用绘制模式
-		 * enableOthers -是否也启用其他模式
+		 * 使用编辑模式
 		 * */
-		public function useDraw(enableOthersFlag:Boolean = false):void
+		public function useEdit():void
 		{
-			changeMode(DrawController,enableOthersFlag);
+			if(!changeMode(EditController))
+				new EditController(this,true);
 		}
 		
 		/**
-		 * 使用选择模式
-		 * enableOthers -是否也启用其他模式
+		 * 使用默认模式
 		 * */
-		public function useSelect(enableOthersFlag:Boolean = false):void
+		public function useDefault():void
 		{
-			changeMode(SelectController,enableOthersFlag);
+			if(!changeMode(DefaultController))
+				new DefaultController(this,true);
 		}
 		
 		/**
-		 * 模式切换
+		 * 模式切换  --切换到选择的控制器，同时把其他的控制器取消激活
 		 * */
-		protected function changeMode(mode:Class,enableOthersFlag:Boolean):void
+		protected function changeMode(mode:Class):Boolean
 		{
-			_controllers.forEach(
-				function(item:IController,...args):void
+			var success:Boolean;
+			for each(var c:IController in _controllers)
+			{
+				if(c is mode)
 				{
-					if(item is mode)
-						item.active = true;
-					else
-						item.active = enableOthersFlag;
-				});
+					if(!c.active)
+						c.active = true;
+					success = true;
+				}
+				else
+				{
+					if(c.active)
+						c.active = false;
+				}
+			}
+			return success;
 		}
 		
 		public function layout():void
 		{
-			LayoutController(layoutController).regionLayout();
+//			LayoutController(layoutController).regionLayout();
 		}
 		
 		/**
@@ -323,19 +301,15 @@ package org.liekkas.bradypod.views
 		 * */
 		public function getElementUnderPoint(x:Number,y:Number):Node
 		{
-			/**
-			 * 有种情况是多个元素叠在一起，这时以最上面的为准，在数组里就是后面的为准，
-			 * 因此倒转数组，只要找到第一个就break
-			 * */
-			for each(var ele:IElement in elementBox.elements.source.reverse())
-			{
-				if(ele is Node && Node(ele).containXY(x,y))
-				{
-					return Node(ele);
-				}
-			}
-			
-			return null;
+			return elementBox.getElementUnderPoint(x,y);
+		}
+		
+		/**
+		 * 获得某区域下元素节点
+		 * */
+		public function getElementsUnderRect(rect:Rectangle):Array
+		{
+			return elementBox.getElementsUnderRect(rect);
 		}
 	}
 }

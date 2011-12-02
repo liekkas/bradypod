@@ -38,12 +38,6 @@ package org.liekkas.bradypod.events
 		public static const DRAW_EDGE_START:String = "InteractionEvent.drawEdgeStart";
 		
 		/**
-		 * 绘制边进行中 -- 鼠标从一个节点move出来一条直线
-		 * */
-		public static const DRAW_EDGE_ING:String = "InteractionEvent.drawEdgeIng";
-		
-		
-		/**
 		 * 绘制边结束 -- 鼠标从一个节点move出来一条直线
 		 * */
 		public static const DRAW_EDGE_END:String = "InteractionEvent.drawEdgeEEnd";
@@ -54,14 +48,19 @@ package org.liekkas.bradypod.events
 		public static const SELECT_START:String = "InteractionEvent.selectStart";
 		
 		/**
-		 * 框选进行中 -- 鼠标移动进行矩形框选
-		 * */
-		public static const SELECT_ING:String = "InteractionEvent.selectIng";
-		
-		/**
 		 * 框选结束 -- 鼠标释放结束矩形框选
 		 * */
 		public static const SELECT_END:String = "InteractionEvent.selectEnd";
+		
+		/**
+		 * 拖拽整个拓扑开始 --拖拽模式下启用
+		 * */
+		public static const DRAG_TOPO_START:String = "InteractionEvent.dragTopoStart";
+		
+		/**
+		 * 拖拽整个拓扑结束 --拖拽模式下启用
+		 * */
+		public static const DRAG_TOPO_END:String = "InteractionEvent.dragTopoEnd";
 		
 		/**
 		 * 绑定拓扑

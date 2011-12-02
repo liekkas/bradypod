@@ -25,6 +25,15 @@
 				e.name = "sss";
 				eleBox.add(e);
 				
+				var e1:Node = new Node("1112");
+				e1.x = 400;
+				e1.y = 300;
+				e1.w = 100;
+				e1.h = 100;
+				e1.icon = "test";
+				e1.name = "sss";
+				eleBox.add(e1);
+				
 				for(var i:int=0;i<10;i++)
 				{
 					var n:Node = new Node("1212");
@@ -45,14 +54,19 @@
 				topo.elementBox = eleBox;
 			}
 			
-			protected function select():void
+			protected function edit():void
 			{
-//				topo.useSelect(true);
+				topo.useEdit();
 			}
 			
-			protected function drag():void
+			protected function nav():void
 			{
-//				topo.useDrag();
+				topo.useDrag();
+			}
+			
+			protected function def():void
+			{
+				topo.useDefault();
 			}
 			
 			protected function regionLayout():void
@@ -62,7 +76,9 @@
 		]]>
 	</mx:Script>
 	<mx:ApplicationControlBar width="100%" height="35" dock="true">
-		<mx:ButtonBar id="bb" dataProvider="['全景展示','编辑模式','导航模式']"/>
+		<mx:Button label="默认模式" click="def()"/>
+		<mx:Button label="编辑模式" click="edit()"/>
+		<mx:Button label="导航模式" click="nav()"/>
 		<mx:Button label="地区布局" click="regionLayout()"/>
 	</mx:ApplicationControlBar>
 	<mx:HBox width="100%" height="100%">

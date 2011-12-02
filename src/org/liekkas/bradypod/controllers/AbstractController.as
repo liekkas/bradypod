@@ -2,14 +2,14 @@ package org.liekkas.bradypod.controllers
 {
 	import mx.managers.CursorManager;
 	
+	import org.liekkas.bradypod.controllers.plugins.IPlugin;
 	import org.liekkas.bradypod.views.Topo;
 	
 	/**
-	 * 基本控制类
+	 * 抽象控制类
 	 * @author liekkas.zeng
-	 * @date 2011-11-28 18:00:45
 	 * */
-	public class BaseController implements IController
+	public class AbstractController implements IController
 	{
 		/**
 		 * topo实例
@@ -31,7 +31,12 @@ package org.liekkas.bradypod.controllers
 		 * */
 		protected var cursorId:int;
 		
-		public function BaseController(topo:Topo = null,active:Boolean = false,cursor:Class = null)
+		/**
+		 * 插件集合
+		 * */
+		protected var plugins:Array = [];
+		
+		public function AbstractController(topo:Topo = null,active:Boolean = false,cursor:Class = null)
 		{
 			this.topo = topo;
 			this.active = active;
@@ -83,15 +88,15 @@ package org.liekkas.bradypod.controllers
 			{
 				if(_active)
 				{
-//					if(cursor)
-//						cursorId = CursorManager.setCursor(cursor);
+					if(cursor)
+						cursorId = CursorManager.setCursor(cursor);
 					register();
 				}
 					
 				else
 				{
-//					if(cursor)
-//						CursorManager.removeCursor(cursorId) ;
+					if(cursor)
+						CursorManager.removeCursor(cursorId) ;
 					unregister();
 				}
 					
@@ -109,6 +114,23 @@ package org.liekkas.bradypod.controllers
 		}
 		
 		/**
+		 * 添加插件
+		 * */
+		protected function installPlugins(arr:Array):void
+		{
+			if(plugins != arr)
+			{
+				plugins = arr;
+				//安装插件
+				for each(var p:IPlugin in plugins)
+				{
+					p.install();
+				}
+			}
+			
+		}
+		
+		/**
 		 * 向topo注册相关的侦听器
 		 * */
 		protected function register():void
@@ -121,7 +143,11 @@ package org.liekkas.bradypod.controllers
 		 * */
 		protected function unregister():void
 		{
-			//TODO
+			//先卸装插件
+			for each(var p:IPlugin in plugins)
+			{
+				p.uninstall();
+			}
 		}
 	}
 }

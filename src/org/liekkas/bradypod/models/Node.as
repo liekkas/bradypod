@@ -136,12 +136,16 @@ package org.liekkas.bradypod.models
 		 * */
 		public function containedByRect(rect:Rectangle):Boolean
 		{
-			if(this.x > rect.x && this.y > rect.y
-				&& this.x + this.w < rect.x + rect.width
-				&& this.y + this.h < rect.y + rect.height)
-				return true;
-			else
-				return false;
+			if(rect)
+			{
+				if(this.x > rect.x && this.y > rect.y
+					&& this.x + this.w < rect.x + rect.width
+					&& this.y + this.h < rect.y + rect.height)
+					return true;
+				else
+					return false;
+			}
+			return false;
 		}
 
 		/**
