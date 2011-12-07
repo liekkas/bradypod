@@ -36,12 +36,12 @@ package org.liekkas.bradypod.controllers.plugins
 		
 		protected function onStart(evt:InteractionEvent):void
 		{
-			topo.graphLayer.startDrag();
+			topo.startDrag();
 		}
 		
 		protected function onEnd(evt:InteractionEvent):void
 		{
-			topo.graphLayer.stopDrag();
+			topo.stopDrag();
 		}
 	}
 }
